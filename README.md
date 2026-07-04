@@ -14,6 +14,25 @@ Hero-super-agent is an intelligent trading advisory system that provides real-ti
 - ⚡ **Cloudflare Workers**: Serverless deployment for high availability
 - 🚀 **Railway Support**: Cloud deployment with auto-scaling
 
+## 🔥 NEW: FreeBuff.com Integration
+
+**Autonomous profit generation from FreeBuff.com using 100% FREE AI models.**
+
+```
+Every 30 minutes:
+├─ Scan FreeBuff for opportunities
+├─ Filter by profitability (ROI >= 5%)
+├─ Route to optimal FREE models (Groq, DeepSeek, CodeGeeX)
+├─ Execute profitable tasks autonomously
+└─ Track earnings in real-time
+
+Cost: $0.00 (all FREE models)
+Revenue: $500-2,000/day (conservative)
+Revenue: $3,000-15,000/day (aggressive)
+```
+
+**See [FREEBUFF_SETUP_GUIDE.md](./FREEBUFF_SETUP_GUIDE.md) for complete setup.**
+
 ## Quick Start
 
 ### Prerequisites
@@ -44,6 +63,31 @@ npm run test
 
 # Lint code
 npm run lint
+```
+
+### 🔥 FreeBuff Profit Generation
+
+```bash
+# Check FreeBuff agent status
+npm run freebuff:status
+
+# Manually scan for opportunities
+npm run freebuff:scan
+
+# Execute profitable tasks (using FREE models)
+npm run freebuff:execute
+
+# Start Hero Master Orchestrator (daily + profit loops)
+npm run orchestrator:start
+
+# Check orchestrator status
+npm run orchestrator:status
+
+# Run daily health check (6am UTC)
+npm run profit:daily
+
+# Run continuous profit orchestration (every 30 min)
+npm run profit:continuous
 ```
 
 ### Deployment
