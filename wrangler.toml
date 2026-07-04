@@ -1,0 +1,42 @@
+name = "hero-super-agent"
+main = "src/index.js"
+type = "service"
+compatibility_date = "2024-12-19"
+account_id = "652e53f35781522e2745784cc4425d9d"
+
+# KV Bindings
+[[kv_namespaces]]
+binding = "HERO_STATE"
+id = "hero-state-kv"
+
+[[kv_namespaces]]
+binding = "HERO_CACHE"
+id = "hero-cache-kv"
+
+# D1 Database
+[env.production.d1_databases]
+HERO_DB = { binding = "HERO_DB", database_name = "hero-super-agent-db", database_id = "hero-super-agent-db" }
+
+# R2 Bucket
+[[env.production.r2_buckets]]
+binding = "ANALYSIS_REPORTS"
+bucket_name = "hero-analysis-reports"
+
+# Routes
+routes = [
+  { pattern = "hero-super-agent.workers.dev/*", zone_name = "workers.dev" }
+]
+
+# Env vars
+[env.production.vars]
+ENVIRONMENT = "production"
+LOG_LEVEL = "info"
+API_TIMEOUT = "30000"
+
+[env.production]
+routes = [
+  { pattern = "hero-super-agent.workers.dev/*", zone_name = "workers.dev" }
+]
+
+[[triggers.crons]]
+cron = "0 */4 * * *"

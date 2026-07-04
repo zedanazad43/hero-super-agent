@@ -1,0 +1,30 @@
+{
+  "name": "hero-super-agent",
+  "version": "1.0.0",
+  "description": "Hero Super Agent - Advanced AI Trading Advisor for DeFi",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "npm run build:cloudflare && npm run build:api && npm run build:web",
+    "build:cloudflare": "cd packages/cloudflare && npm install && npm run build",
+    "build:api": "cd packages/api && npm install",
+    "build:web": "cd packages/web && npm install",
+    "deploy": "npm run build && bash scripts/deploy/deploy.sh",
+    "deploy:dry": "cd packages/cloudflare && wrangler deploy --dry-run",
+    "test": "echo 'Tests configured in packages/*/package.json'",
+    "lint": "eslint . --ext .js,.jsx,.mjs",
+    "check:secrets": "node scripts/check/security-audit.js --secrets-only",
+    "verify": "npm run lint && npm run check:secrets && npm run deploy:dry",
+    "verify:prod": "npm run build && npm run verify",
+    "smoke:prod": "node scripts/check/verify-production-endpoints.js",
+    "monitor": "node scripts/monitor/monitor-performance.js",
+    "db:migrate": "wrangler d1 execute hero-super-agent-db --remote --file=./migrations/schema.sql"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "wrangler": "^4.86.0"
+  }
+}

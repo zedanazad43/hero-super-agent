@@ -1,0 +1,17 @@
+{
+  "build": {
+    "builder": "nixpacks"
+  },
+  "start": "node packages/api/server.js",
+  "env": {
+    "ENVIRONMENT": {
+      "value": "production"
+    },
+    "LOG_LEVEL": {
+      "value": "info"
+    },
+    "NODE_ENV": {
+      "value": "production"
+    }
+  }
+}
