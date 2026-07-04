@@ -40,7 +40,142 @@ Routes tasks to appropriate free skills:
 - Tracks profit/loss
 - Generates performance reports
 
+### 5. FreeBuff Profit Generation 🔥
+- **Scans** FreeBuff.com for opportunities every 30 minutes
+- **Filters** by profitability (ROI >= 5%)
+- **Routes** tasks to optimal FREE models (Groq, DeepSeek, CodeGeeX)
+- **Executes** profitable gigs autonomously
+- **Tracks** earnings in real-time
+- **Maximizes** profit using ZERO token cost models
+
 ## GitHub Actions Workflows
+
+### 🔥 NEW: FreeBuff Profit Agent
+
+**Name**: HeroFreeBuffAgent  
+**Role**: Autonomous Profit Generator  
+**Status**: ACTIVE  
+**Profit Channel**: FreeBuff.com (unlimited gigs)  
+**Models**: Groq (fast), DeepSeek (quality), CodeGeeX (local)  
+**Cost**: $0.00 (all FREE)  
+
+#### FreeBuff Agent Architecture
+```
+┌─────────────────────────────────────┐
+│   HeroFreeBuffAgent                 │
+│   (src/agents/freebuff-agent.js)    │
+└──────────┬──────────────────────────┘
+           │
+    ┌──────┴───────┬─────────┬────────┬──────────┐
+    ↓              ↓         ↓        ↓          ↓
+ SCAN        FILTER     ROUTE      EXECUTE    TRACK
+ Opps        by ROI     to Models   Tasks     Results
+```
+
+#### FreeBuff Execution Cycle (Every 30 min)
+```yaml
+1. SCAN (Groq - fastest)
+   └─ Query FreeBuff API
+   └─ Pull all active opportunities
+   └─ Extract: ID, title, reward, category, time, profitability
+
+2. FILTER (CodeGeeX - local, zero cost)
+   └─ Calculate ROI = (reward - cost) / cost
+   └─ Filter: ROI >= 5% threshold
+   └─ Sort by efficiency: reward / estimated_time
+
+3. ROUTE (Model Router)
+   └─ For coding: CodeGeeX or DeepSeek
+   └─ For content: Ollama or HuggingFace
+   └─ For analysis: Groq or DeepSeek
+   └─ For general: Nearest FREE model
+
+4. EXECUTE (Task-specific agent)
+   └─ Code Agent: Generate/fix code
+   └─ Content Agent: Write/design
+   └─ Research Agent: Analyze/research
+   └─ Test Agent: Verify/QA
+
+5. TRACK (Local logging)
+   └─ Log task ID, model used, time, reward
+   └─ Update total earnings
+   └─ Calculate metrics: completion rate, avg reward
+```
+
+#### FreeBuff Integration Files
+```
+hero-super-agent/
+├── src/agents/
+│   └── freebuff-agent.js           # Main agent implementation
+├── src/integrations/freebuff/
+│   └── client.js                   # FreeBuff API client
+├── src/models/
+│   └── free-ecosystem-registry.js  # Models + FreeBuff config
+├── src/orchestration/
+│   ├── hero-orchestrator.js        # Initializes FreeBuff agent
+│   └── model-router.js             # Routes to FREE models only
+└── .github/workflows/
+    └── hero-profit-orchestration.yml  # Runs every 30 min
+```
+
+#### FreeBuff Agent API
+
+```javascript
+// Initialize
+const agent = new HeroFreeBuffAgent(modelRouter);
+await agent.initialize();
+
+// Scan opportunities
+const opportunities = await agent.scanForOpportunities();
+
+// Filter by profitability
+const profitable = await agent.filterProfitableOpportunities();
+
+// Execute optimal tasks
+await agent.executeOptimalTasks();
+
+// Track progress
+const metrics = await agent.trackProgress();
+// Returns: { tasksCompleted, totalEarnings, completionRate, ... }
+
+// Subscribe to real-time updates
+await agent.subscribeToUpdates();
+
+// Get status
+const status = agent.getStatus();
+// Returns: { name, role, status, metrics, portfolio, lastUpdate }
+```
+
+#### FreeBuff Performance Metrics
+```
+┌─ Metrics Tracked ─────────────────┐
+│ • Opportunities scanned           │
+│ • Profitable opportunities found  │
+│ • Tasks completed                 │
+│ • Total earnings (credits)        │
+│ • Average task value              │
+│ • Completion rate %               │
+│ • Cost per task ($0.00)           │
+│ • Profit margin (INFINITE)        │
+└───────────────────────────────────┘
+```
+
+#### Integration with Hero Orchestrator
+```javascript
+// In hero-orchestrator.js
+this.freeBuffAgent = new HeroFreeBuffAgent(this.modelRouter);
+
+// Daily orchestration calls:
+const portfolio = await this.freeBuffAgent.getPortfolio();
+console.log('Active gigs:', portfolio.activeGigs.length);
+console.log('Earnings:', portfolio.earnings);
+
+// Profit orchestration runs every 30 min:
+await this.freeBuffAgent.scanForOpportunities();
+await this.freeBuffAgent.filterProfitableOpportunities();
+await this.freeBuffAgent.executeOptimalTasks();
+const metrics = await this.freeBuffAgent.trackProgress();
+```
 
 ### Workflow 1: Daily Health Check
 ```yaml

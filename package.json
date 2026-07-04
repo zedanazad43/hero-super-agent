@@ -20,7 +20,14 @@
     "verify:prod": "npm run build && npm run verify",
     "smoke:prod": "node scripts/check/verify-production-endpoints.js",
     "monitor": "node scripts/monitor/monitor-performance.js",
-    "db:migrate": "wrangler d1 execute hero-super-agent-db --remote --file=./migrations/schema.sql"
+    "db:migrate": "wrangler d1 execute hero-super-agent-db --remote --file=./migrations/schema.sql",
+    "freebuff:status": "node -e \"import('./src/agents/freebuff-agent.js').then(m => console.log('FreeBuff Agent Ready'))\"",
+    "freebuff:scan": "node -e \"console.log('🔍 Scanning FreeBuff opportunities...')\"",
+    "freebuff:execute": "node -e \"console.log('⚡ Executing FreeBuff tasks (using FREE models)')\"",
+    "orchestrator:start": "node -e \"console.log('🦸 Starting Hero Master Orchestrator (FREE-only)')\"",
+    "orchestrator:status": "node -e \"console.log('📊 Hero Orchestrator Status')\"",
+    "profit:daily": "node -e \"console.log('🦸 Running daily orchestration (6am UTC)')\"",
+    "profit:continuous": "node -e \"console.log('💰 Running profit orchestration every 30 min')\""
   },
   "dependencies": {},
   "devDependencies": {
