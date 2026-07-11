@@ -236,8 +236,35 @@ async function router(req, res) {
   if (method === 'POST' && url === '/api/agent') return handleAgent(req, res);
   if (method === 'GET' && url === '/api/files') return handleFiles(req, res);
   if (method === 'GET' && url === '/api/arbitrage') return handleArbitrage(req, res);
+  if (method === 'POST' && url === '/api/trade') return handleTrade(req, res);
 
-  json(res, 404, { error: 'Not found', available: ['/health', '/api/status', '/api/agent', '/api/files', '/api/arbitrage'] });
+  json(res, 404, { error: 'Not found', available: ['/health', '/api/status', '/api/agent', '/api/files', '/api/arbitrage', '/api/trade'] });
+}
+
+// ── Route: POST /api/trade ────────────────────────────────────────────────────
+// Triggers a scan+execution cycle on the UltimateArbitrageHFT Worker.
+// The Worker decides PAPER vs LIVE based on its own trading_state.
+// NEVER forces live trading — safety is enforced on the Worker side.
+async function handleTrade(req, res) {
+  const base = (process.env.ARBITRAGE_API ?? 'https://api.ecostamp.net').replace(/\/$/, '');
+  const token = process.env.ARBITRAGE_ADMIN_TOKEN;
+  if (!token) return json(res, 500, { error: 'ARBITRAGE_ADMIN_TOKEN not configured' });
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 12000); // don't wait for full scan
+    const r = await fetch(`${base}/scan`, {
+      headers: { 'x-admin-token': token },
+      signal: ac.signal,
+    }).finally(() => clearTimeout(t));
+    const body = await r.json().catch(() => ({}));
+    json(res, 200, { status: 'triggered', source: base, scan: body });
+  } catch (e) {
+    // If the Worker already started the scan (202/timeout), treat as success.
+    if (e.name === 'AbortError') {
+      return json(res, 200, { status: 'triggered', note: 'scan started on worker (background)' });
+    }
+    json(res, 502, { error: e.message });
+  }
 }
 
 // ── Route: GET /api/arbitrage ──────────────────────────────────────────────────
