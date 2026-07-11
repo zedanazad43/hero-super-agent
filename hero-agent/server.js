@@ -235,8 +235,33 @@ async function router(req, res) {
   if (method === 'GET' && url === '/api/status') return handleStatus(req, res);
   if (method === 'POST' && url === '/api/agent') return handleAgent(req, res);
   if (method === 'GET' && url === '/api/files') return handleFiles(req, res);
+  if (method === 'GET' && url === '/api/arbitrage') return handleArbitrage(req, res);
 
-  json(res, 404, { error: 'Not found', available: ['/health', '/api/status', '/api/agent', '/api/files'] });
+  json(res, 404, { error: 'Not found', available: ['/health', '/api/status', '/api/agent', '/api/files', '/api/arbitrage'] });
+}
+
+// ── Route: GET /api/arbitrage ──────────────────────────────────────────────────
+// Proxies balance/status queries to the UltimateArbitrageHFT Cloudflare Worker.
+// Set ARBITRAGE_API (default https://api.ecostamp.net) + ARBITRAGE_ADMIN_TOKEN.
+async function handleArbitrage(req, res) {
+  const base = (process.env.ARBITRAGE_API ?? 'https://api.ecostamp.net').replace(/\/$/, '');
+  const token = process.env.ARBITRAGE_ADMIN_TOKEN;
+  if (!token) {
+    return json(res, 500, { error: 'ARBITRAGE_ADMIN_TOKEN not configured' });
+  }
+  const exchanges = ['binance', 'kucoin', 'bitget', 'mexc', 'htx', 'bitmart'];
+  const out = {};
+  await Promise.all(exchanges.map(async (ex) => {
+    try {
+      const r = await fetch(`${base}/api/exchange/${ex}?ts=${Date.now()}`, {
+        headers: { 'x-admin-token': token, 'Cache-Control': 'no-cache' },
+      });
+      out[ex] = await r.json();
+    } catch (e) {
+      out[ex] = { exchange: ex, error: e.message };
+    }
+  }));
+  json(res, 200, { source: base, balances: out });
 }
 
 // ── Status-only mode ──────────────────────────────────────────────────────────
