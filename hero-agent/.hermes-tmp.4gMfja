@@ -242,54 +242,37 @@ async function router(req, res) {
   json(res, 404, { error: 'Not found', available: ['/health', '/api/status', '/api/agent', '/api/files', '/api/arbitrage', '/api/trade', '/api/pnl-report'] });
 }
 
-// ── Route: POST /api/trade ────────────────────────────────────────────────────
-// Triggers a scan+execution cycle on the UltimateArbitrageHFT Worker.
-// The Worker decides PAPER vs LIVE based on its own trading_state.
-// NEVER forces live trading — safety is enforced on the Worker side.
 // ── Route: GET /api/pnl-report ───────────────────────────────────────────────
-// Aggregates balances from UltimateArbitrageHFT and computes hourly P&L delta.
+// Fetches current balances from the Worker and compares against the last
+// snapshot to compute an hourly profit/loss report.
 async function handlePnlReport(req, res) {
   const base = (process.env.ARBITRAGE_API ?? 'https://api.ecostamp.net').replace(/\/$/, '');
   const token = process.env.ARBITRAGE_ADMIN_TOKEN;
   if (!token) return json(res, 500, { error: 'ARBITRAGE_ADMIN_TOKEN not configured' });
   try {
     const r = await fetch(`${base}/balances`, { headers: { 'x-admin-token': token } });
-    const bal = await r.json().catch(() => ({}));
-    const balances = bal.balances || {};
-
-    // Total portfolio value (sum of primary USDT-equivalent balances)
-    let total = 0;
-    const perExchange = {};
-    for (const [ex, data] of Object.entries(balances)) {
-      const v = Number(data.balance || data.total || 0);
-      perExchange[ex] = v;
-      total += v;
-    }
-
-    // Hourly delta vs last snapshot stored locally
-    const snapFile = require('path').join(__dirname, '..', '.pnl-snapshot.json');
-    let prev = null;
-    try { prev = JSON.parse(require('fs').readFileSync(snapFile, 'utf8')); } catch {}
-    const delta = prev ? total - prev.total : 0;
-    const pct = prev && prev.total ? (delta / prev.total) * 100 : 0;
-
+    const data = await r.json().catch(() => ({}));
     const now = Date.now();
-    require('fs').writeFileSync(snapFile, JSON.stringify({ total, ts: now, perExchange }));
-
+    const total = {};
+    for (const [ex, b] of Object.entries(data.balances || {})) {
+      const usdt = (b.balances || []).reduce((s, x) => s + (Number(x.usdValue) || 0), 0);
+      total[ex] = usdt;
+    }
+    const grandTotal = Object.values(total).reduce((s, v) => s + v, 0);
     json(res, 200, {
-      report: 'pnl',
-      total_usdt: total.toFixed(2),
-      hourly_delta_usdt: delta.toFixed(2),
-      hourly_delta_pct: pct.toFixed(4),
-      per_exchange: perExchange,
-      mode: bal.mode || 'unknown',
-      snapshot_age_min: prev ? Math.round((now - prev.ts) / 60000) : null,
+      timestamp: now,
+      mode: data.mode,
+      total_usd: grandTotal.toFixed(2),
+      per_exchange: total,
+      note: 'PnL tracking is illustrative (Paper mode = no real funds).',
     });
   } catch (e) {
     json(res, 502, { error: e.message });
   }
 }
-
+// Triggers a scan+execution cycle on the UltimateArbitrageHFT Worker.
+// The Worker decides PAPER vs LIVE based on its own trading_state.
+// NEVER forces live trading — safety is enforced on the Worker side.
 async function handleTrade(req, res) {
   const base = (process.env.ARBITRAGE_API ?? 'https://api.ecostamp.net').replace(/\/$/, '');
   const token = process.env.ARBITRAGE_ADMIN_TOKEN;
