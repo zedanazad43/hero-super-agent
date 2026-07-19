@@ -29,7 +29,7 @@ jobs:
       - name: 📦 Install Dependencies (FREE TOOLS ONLY)
         run: |
           echo "📥 Installing free dependencies..."
-          npm ci --production
+          npm install --production
           echo "✅ Dependencies installed"
       
       - name: 🔐 Verify FREE Models Configuration

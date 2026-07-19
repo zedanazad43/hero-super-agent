@@ -25,7 +25,7 @@ jobs:
           cache: 'npm'
       
       - name: 📦 Install Dependencies
-        run: npm ci --production
+        run: npm install --production
       
       - name: ✅ VERIFY FREE-ONLY (ZERO PAID APIs)
         run: |
