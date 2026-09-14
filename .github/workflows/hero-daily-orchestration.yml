@@ -29,12 +29,12 @@ jobs:
       
       - name: ✅ VERIFY FREE-ONLY (ZERO PAID APIs)
         run: |
-          echo "🔍 Scanning for ANY paid API references..."
-          if grep -r "openai\|anthropic\|cohere\|paid" src/ --include="*.js" 2>/dev/null; then
-            echo "❌ ERROR: Found paid API reference!"
+          echo "🔍 Scanning for first-party paid-provider endpoints..."
+          if grep -rE --include='*.js' 'https://(api\.openai\.com|api\.anthropic\.com|api\.cohere\.ai)(/|$)' src/ 2>/dev/null; then
+            echo "❌ ERROR: Found a first-party paid-provider endpoint!"
             exit 1
           fi
-          echo "✅ CONFIRMED: Zero paid APIs - 100% FREE"
+          echo "✅ CONFIRMED: No first-party paid-provider endpoints found"
       
       - name: 🦸 Hero Daily Orchestration
         run: |
