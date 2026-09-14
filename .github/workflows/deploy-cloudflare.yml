@@ -1,45 +1,44 @@
-name: Deploy to Cloudflare
+name: Deploy Hero Worker to Cloudflare
 
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/check/**"
+      - "wrangler.toml"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-cloudflare.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hero-cloudflare-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
     if: vars.ENABLE_CLOUDFLARE_DEPLOY == 'true'
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: "22"
           cache: npm
-
       - name: Install dependencies
-        run: npm install
-
-      - name: Build Cloudflare Worker
-        run: npm run build:cloudflare
-
-      - name: Deploy to Cloudflare
+        run: npm ci
+      - name: Verify Worker contract
+        run: npm run verify
+      - name: Deploy canonical Worker
         run: npm run deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-      - name: Run smoke tests
+      - name: Run public Worker smoke checks
         run: npm run smoke:prod
-
-      - name: Notify on success
-        if: success()
-        run: |
-          echo "✅ Hero-super-agent deployed to Cloudflare Workers"
-          echo "Endpoint: https://hero-super-agent.workers.dev"
-
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "❌ Deployment failed - check logs above"
+        env:
+          HERO_WORKER_URL: https://hero-super-agent.zedanazad43.workers.dev

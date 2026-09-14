@@ -49,58 +49,16 @@ gh secret set RAILWAY_PROJECT_ID --body "YOUR_RAILWAY_PROJECT_ID"
 
 ### Configure Wrangler
 
-File: `wrangler.toml`
+The repository has one canonical Worker configuration at the project root. Its
+entry point is `src/index.js`, and it serves unauthenticated `/health` and `/`
+metadata responses without requiring a backend service. The standard Workers
+subdomain is enabled through `workers_dev = true`; do not add a custom
+`workers.dev` route.
 
-```toml
-name = "hero-super-agent"
-main = "src/index.js"
-type = "service"
-compatibility_date = "2024-12-19"
-account_id = "652e53f35781522e2745784cc4425d9d"
-
-[[kv_namespaces]]
-binding = "HERO_STATE"
-id = "hero-state-kv"
-
-[[kv_namespaces]]
-binding = "HERO_CACHE"
-id = "hero-cache-kv"
-
-[env.production.d1_databases]
-HERO_DB = { binding = "HERO_DB", database_name = "hero-super-agent-db", database_id = "hero-super-agent-db" }
-
-[[env.production.r2_buckets]]
-binding = "ANALYSIS_REPORTS"
-bucket_name = "hero-analysis-reports"
-
-routes = [
-  { pattern = "hero-super-agent.workers.dev/*", zone_name = "workers.dev" }
-]
-
-[env.production.vars]
-ENVIRONMENT = "production"
-LOG_LEVEL = "info"
-API_TIMEOUT = "30000"
-```
-
-### Create KV Namespaces
-
-```bash
-# Create KV namespaces
-wrangler kv:namespace create "HERO_STATE" --preview false
-wrangler kv:namespace create "HERO_CACHE" --preview false
-
-# Note the namespace IDs and update wrangler.toml
-```
-
-### Create D1 Database
-
-```bash
-# Create D1 database
-wrangler d1 create "hero-super-agent-db"
-
-# Update wrangler.toml with returned database_id
-```
+If an HTTPS backend is available, set `WORKER_BACKEND` as a Cloudflare Worker
+secret. The Worker proxies only to an explicitly configured HTTPS origin. When
+no backend is configured, non-public paths return a JSON 404 response rather
+than proxying to localhost.
 
 ### Deploy to Cloudflare
 
@@ -112,7 +70,7 @@ npm run deploy:dry
 npm run deploy
 
 # Verify deployment
-curl https://hero-super-agent.workers.dev/health
+HERO_WORKER_URL=https://hero-super-agent.<account-subdomain>.workers.dev npm run smoke:prod
 ```
 
 ## Step 3: Railway Deployment
